@@ -1,0 +1,159 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+        <title>Shipment</title>
+        <style>
+            .container{
+                padding: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">		
+            <div class="form-group">
+                <label for="barcode">Scan the BAR CODE</label>
+                <input type="text" id="barcode" class="form-control" placeholder="ex.123456">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary btn-block" id="search_button">Search <i class="fas fa-search"></i></button>
+            </div>
+            <br>
+            <hr>
+            <div class="row">
+                <div class="col-6">
+                    <div class="text-center">
+                        <h3>Cart</h3>
+                        <table class="table table-border table-hover">
+                            <tbody id="cart_table">
+                                <tr class="text-center">
+                                    <th>Item</th>
+                                    <th>Value</th>
+                                    <th>Add</th>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="text-center">
+                                    <th>Total</th>
+                                    <th id="totalCartValue">0</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="text-center">
+                        <h3>Shipment</h3>
+                        <table class="table table-border table-hover">
+                            <tbody id="shipment_table">
+                                <tr class="text-center">
+                                    <th>Item</th>
+                                    <th>Value</th>
+                                    <th>Remove</th>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="text-center">
+                                    <th>Total</th>
+                                    <th id="totalShipmentValue">0</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+			
+            <div class="alert alert-success alert-dismissible" id="addAlert" style="display: none">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Success!</strong> Item successfully added to the shipment.
+            </div>
+
+            <div class="alert alert-danger alert-dismissible" id="removeAlert" style="display: none">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Attention!</strong> Item successfully removed from the shipment.
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
+        <script>
+            var counter = 1;
+            $("#search_button").click(function () {
+                //take the item's barcode
+                barcode = $("#barcode").val();
+
+                //reset the input
+                $("#barcode").val('');
+
+                //get the value
+                value = Math.floor(Math.random() * 100) + 1;
+
+                //add to cart's list
+                $('#cart_table tr:last').after("<tr class=\"text-center\" id='row_"+counter+"'><td id='item_"+counter+"'>"+barcode+"</td><td class='cart-value' id='value_"+counter+"'>"+value+"</td><td><button class=\"btn btn-success\" onclick=\"addToShipment("+counter+");\">Add</button></td></tr>");
+                counter++;
+
+                //make calculation
+                calculateValue();
+
+                //show alert
+                $("#addAlert").fadeIn('slow').delay(500).fadeOut('slow');
+            });
+
+            function addToShipment(itemCounter){
+                //get item's name
+                barcode = $("#item_"+itemCounter).html();
+
+                //get items's value
+                value = $("#value_"+itemCounter).html();
+
+                //remove from cart
+                $("#row_"+itemCounter).remove();
+
+                //add to shipment
+                $('#shipment_table tr:last').after("<tr class=\"text-center\" id='row_"+itemCounter+"'><td id='item_"+itemCounter+"'>"+barcode+"</td><td class='shipment-value' id='value_"+itemCounter+"'>"+value+"</td><td><button class=\"btn btn-danger\" onclick=\"removeFromShipment("+itemCounter+");\">Remove</button></td></tr>");
+
+                //make calculation
+                calculateValue();
+
+                //show alert
+                $("#addAlert").fadeIn('slow').delay(500).fadeOut('slow');
+            }
+
+            function removeFromShipment(itemCounter){
+                //get item's name
+                barcode = $("#item_"+itemCounter).html();
+
+                //get items's value
+                value = $("#value_"+itemCounter).html();
+
+                //remove from cart
+                $("#row_"+itemCounter).remove();
+
+                //add to shipment
+                $('#cart_table tr:last').after("<tr class=\"text-center\" id='row_"+itemCounter+"'><td id='item_"+itemCounter+"'>"+barcode+"</td><td class='cart-value' id='value_"+itemCounter+"'>"+value+"</td><td><button class=\"btn btn-success\" onclick=\"addToShipment("+itemCounter+");\">Add</button></td></tr>");
+
+                //make calculation
+                calculateValue();
+
+                //show alert
+                $("#removeAlert").fadeIn('slow').delay(500).fadeOut('slow');
+            }
+
+            function calculateValue(){
+                total = 0;
+                $(".cart-value").each(function() {
+                    total += parseInt($(this).html());
+                });
+                $("#totalCartValue").html(total);
+
+                total = 0;
+                $(".shipment-value").each(function() {
+                    total += parseInt($(this).html());
+                });
+                $("#totalShipmentValue").html(total);
+            }
+        </script>
+    </body>
+</html>
